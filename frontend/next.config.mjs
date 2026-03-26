@@ -1,11 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Your original setting
   reactCompiler: true,
 
-  // 💡 Suggested Addition for Image Fixes
   images: {
-    // Allows images from the TMDb host
     remotePatterns: [
       {
         protocol: 'https',
@@ -14,14 +11,20 @@ const nextConfig = {
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '3332',   
+        port: '3332',
       },
-      
-    
     ],
     unoptimized: false,
-    // Allows the custom quality={30} used in your Image component
-    qualities: [30, 75], 
+    qualities: [30, 75],
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://backend:3332/api/:path*',
+      },
+    ];
   },
 };
 

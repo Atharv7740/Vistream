@@ -49,9 +49,19 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 300s
           script: |
+            set -euo pipefail
+            
+            echo "=== Starting Deployment ==="
+            
+            # Get branch name
+            BRANCH=$(git rev-parse --abbrev-ref HEAD)
+            echo "Deploying branch: $BRANCH"
+            
             # Install Docker if not present
             if ! command -v docker >/dev/null 2>&1; then
+              echo "Installing Docker..."
               sudo apt-get update
               sudo apt-get install -y ca-certificates curl gnupg lsb-release
               curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -60,7 +70,12 @@ jobs:
               sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin git
               sudo systemctl enable --now docker
               sudo usermod -aG docker ubuntu
+              echo "Docker installed successfully"
             fi
+            
+            # Verify Docker
+            docker --version
+            docker compose version
             
             # Create app directory
             sudo mkdir -p /opt/Vistream
@@ -69,21 +84,41 @@ jobs:
             # Clone or update repo
             cd /opt/Vistream
             if [ ! -d .git ]; then
+              echo "Cloning repository..."
               git clone https://github.com/Atharv7740/Vistream.git .
             else
-              git fetch origin main
-              git reset --hard origin/main
+              echo "Updating repository..."
+              git fetch origin $BRANCH
+              git reset --hard origin/$BRANCH
             fi
             
             # Create .env if not exists
             if [ ! -f backend/.env ]; then
+              echo "Creating backend .env from example..."
               cp backend/.env.example backend/.env
             fi
             
             # Build and start containers
+            echo "Building containers..."
             sudo docker compose down 2>/dev/null || true
-            sudo docker compose build
-            sudo docker compose up -d
-            sudo docker system prune -f
+            sudo docker compose build --no-cache
             
-            echo "Deployment complete!"
+            echo "Starting containers..."
+            sudo docker compose up -d
+            
+            # Wait for containers to start
+            sleep 15
+            
+            # Show container status
+            echo "=== Container Status ==="
+            sudo docker compose ps
+            
+            # Show logs for debugging
+            echo "=== Container Logs (Last 30 lines) ==="
+            sudo docker compose logs --tail=30
+            
+            # Check if containers are running
+            RUNNING=$(sudo docker compose ps --format json 2>/dev/null | grep -c "running" || echo "0")
+            echo "Running containers: $RUNNING"
+            
+            echo "=== Deployment Complete ==="
