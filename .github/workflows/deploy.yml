@@ -48,41 +48,66 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Validate required secrets
-          echo "Validating secrets..."
-          echo "EC2_HOST: ${{ secrets.EC2_HOST }}"
-          echo "EC2_USER: ${{ secrets.EC2_USER }}"
-
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          # Write private key safely (preserve newlines)
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Add host key with timeout + retries
-          echo "Adding SSH host key..."
           for i in 1 2 3 4 5; do
             ssh-keyscan -T 10 -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null && break
-            echo "ssh-keyscan attempt $i failed; retrying..." >&2
             sleep 2
           done
 
-          # Verify known_hosts is populated
-          if [ -s ~/.ssh/known_hosts ]; then
-            echo "SSH configuration successful!"
-          else
-            echo "ERROR: known_hosts is empty after all attempts"
-            exit 1
-          fi
+          echo "SSH configured"
           
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /opt/Vistream
-            git pull origin main
-            docker-compose down
-            docker-compose build --no-cache
-            docker-compose up -d
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            set -euo pipefail
+
+            APP_DIR=/opt/Vistream
+            REPO_URL="https://github.com/Atharv7740/Vistream.git"
+            BRANCH=main
+
+            # Install Docker if not present
+            if ! command -v docker &> /dev/null; then
+              sudo apt update
+              sudo apt install -y docker.io docker-compose-plugin git
+              sudo systemctl enable --now docker
+              sudo usermod -aG docker ubuntu
+            fi
+
+            # Install Docker Compose if not present
+            if ! command -v docker compose &> /dev/null; then
+              sudo apt update
+              sudo apt install -y docker-compose-plugin
+            fi
+
+            # Ensure base directory exists
+            sudo mkdir -p \$APP_DIR
+            sudo chown -R ubuntu:ubuntu \$APP_DIR
+
+            # Clone or update repo
+            if [ ! -d "\$APP_DIR/.git" ]; then
+              rm -rf \$APP_DIR/*
+              git clone --branch \$BRANCH \$REPO_URL \$APP_DIR
+            fi
+
+            cd \$APP_DIR
+            git fetch origin \$BRANCH
+            git reset --hard origin/\$BRANCH
+
+            # Create .env file if not exists
+            if [ ! -f backend/.env ]; then
+              cp backend/.env.example backend/.env
+            fi
+
+            # Build and start containers
+            docker compose down 2>/dev/null || true
+            docker compose build --no-cache
+            docker compose up -d
             docker system prune -f
+
+            echo "Deployment complete!"
           EOF
