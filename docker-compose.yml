@@ -1,23 +1,21 @@
-version: '3.8'
-
 services:
   backend:
     build:
-      context: ./vistream-backend
+      context: ./backend
       dockerfile: Dockerfile
     ports:
       - "3332:3332"
     env_file:
-      - ./vistream-backend/.env
+      - ./backend/.env
     volumes:
-      - ./vistream-backend/videos:/app/videos
+      - ./backend/videos:/app/videos
     restart: unless-stopped
     networks:
       - vistream-network
 
   frontend:
     build:
-      context: ./vistream-frontend
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
