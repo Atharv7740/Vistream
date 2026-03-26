@@ -43,11 +43,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Debug - Check EC2 connectivity
-        run: |
-          echo "Testing SSH connection to ${{ secrets.EC2_HOST }}"
-          nc -zv -w 10 ${{ secrets.EC2_HOST }} 22 || echo "Port 22 not reachable"
-          
       - name: Configure SSH
         shell: bash
         run: |
@@ -64,11 +59,13 @@ jobs:
         run: |
           set -euo pipefail
           
-          SSH_CMD="ssh -o StrictHostKeyChecking=no -o ConnectTimeout=120 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o BatchMode=yes ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}"
+          # First test connection
+          echo "Testing SSH connection..."
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=120 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH Connected Successfully!'"
           
-          $SSH_CMD "echo 'SSH Connection Successful!'"
+          echo "Deploying..."
           
-          $SSH_CMD << 'COMMANDS'
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=120 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'COMMANDS'
             set -euo pipefail
             
             # Install Docker if not present
