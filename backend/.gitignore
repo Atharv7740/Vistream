@@ -1,0 +1,16 @@
+# Local videos (keep sample if needed)
+videos/*.mp4
+!videos/sample.mp4
+
+# Thumbnails
+thumbnails/
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+
+# Node modules (if not already)
+node_modules/

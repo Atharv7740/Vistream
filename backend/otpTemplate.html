@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Password Recovery</title>
+    <style>
+        .otp-container {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a73e8;
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            display: inline-block;
+            text-align: center;
+        }
+        .warning {
+            color: #cc0000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <p>Hi <strong>{{name}}</strong>,</p>
+
+    <p>We received a request to recover the password for your account.</p>
+
+    <p>To proceed, please use the following <b>One-Time Password (OTP)</b>:</p>
+
+    <div class="otp-container">
+        {{otp}}
+    </div>
+
+    <p>This code is valid for <strong>10 minutes</strong>. Please enter it on the password recovery screen to complete the process.</p>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+    <p><span class="warning">⚠️ Security Warning:</span></p>
+    <ul>
+        <li>If you did <strong>not</strong> request a password recovery, please ignore this email. Your password will remain unchanged.</li>
+        <li><strong>Do not share this code</strong> with anyone, including our support staff. We will never ask you for your OTP.</li>
+    </ul>
+
+    <p>If you have any trouble recovering your password, please contact our support team.</p>
+
+    <p>Thanks,</p>
+    <p>
+        The {{companyName}} Team<br>
+        <a href="{{helpLink}}">{{helpLink}}</a>
+    </p>
+</body>
+</html>
