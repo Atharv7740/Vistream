@@ -43,31 +43,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure SSH
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
-          echo "SSH configured"
-          
       - name: Deploy to EC2
-        shell: bash
-        run: |
-          set -euo pipefail
-          
-          # First test connection
-          echo "Testing SSH connection..."
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=120 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo 'SSH Connected Successfully!'"
-          
-          echo "Deploying..."
-          
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=120 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'COMMANDS'
-            set -euo pipefail
-            
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
             # Install Docker if not present
             if ! command -v docker >/dev/null 2>&1; then
               sudo apt-get update
@@ -105,4 +87,3 @@ jobs:
             sudo docker system prune -f
             
             echo "Deployment complete!"
-          COMMANDS
