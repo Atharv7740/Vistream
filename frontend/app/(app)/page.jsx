@@ -4,6 +4,9 @@ import JumperSection from "@/components/section/JumperSection";
 import { api, ENDPOINT,  } from "@/lib/api.server";
 
 import { safeFetch } from "@/lib/api.server";
+
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const list = [
     {
