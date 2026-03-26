@@ -63,7 +63,7 @@ jobs:
           
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "bash -lc 'set -euo pipefail
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "bash -lc 'set -euo pipefail
             APP_DIR=/opt/Vistream
             REPO_URL=https://github.com/Atharv7740/Vistream.git
             BRANCH=main
@@ -102,7 +102,7 @@ jobs:
             fi
 
             sudo docker compose down 2>/dev/null || true
-            sudo docker compose build --no-cache
+            sudo docker compose build
             sudo docker compose up -d
             sudo docker system prune -f
             echo Deployment complete!
