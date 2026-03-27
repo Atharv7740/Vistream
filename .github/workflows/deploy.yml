@@ -7,41 +7,15 @@ on:
     branches: [main, master]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: Install Frontend Dependencies
-        run: |
-          cd frontend
-          npm ci
-          
-      - name: Build Frontend
-        run: |
-          cd frontend
-          npm run build
-          
-      - name: Install Backend Dependencies
-        run: |
-          cd backend
-          npm ci
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
@@ -54,10 +28,6 @@ jobs:
             set -euo pipefail
             
             echo "=== Starting Deployment ==="
-            
-            # Get branch name
-            BRANCH=$(git rev-parse --abbrev-ref HEAD)
-            echo "Deploying branch: $BRANCH"
             
             # Install Docker if not present
             if ! command -v docker >/dev/null 2>&1; then
@@ -81,16 +51,11 @@ jobs:
             sudo mkdir -p /opt/Vistream
             sudo chown -R ubuntu:ubuntu /opt/Vistream
             
-            # Clone or update repo
+            # Clone or update repo - always force fresh clone to avoid issues
+            echo "Updating repository..."
             cd /opt/Vistream
-            if [ ! -d .git ]; then
-              echo "Cloning repository..."
-              git clone https://github.com/Atharv7740/Vistream.git .
-            else
-              echo "Updating repository..."
-              git fetch origin $BRANCH
-              git reset --hard origin/$BRANCH
-            fi
+            rm -rf * .??* 2>/dev/null || true
+            git clone https://github.com/Atharv7740/Vistream.git .
             
             # Create .env if not exists
             if [ ! -f backend/.env ]; then
@@ -118,7 +83,7 @@ jobs:
             sudo docker compose logs --tail=30
             
             # Check if containers are running
-            RUNNING=$(sudo docker compose ps --format json 2>/dev/null | grep -c "running" || echo "0")
-            echo "Running containers: $RUNNING"
+            echo "=== Checking Container Health ==="
+            sudo docker compose ps
             
             echo "=== Deployment Complete ==="
