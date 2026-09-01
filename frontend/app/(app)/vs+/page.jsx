@@ -4,7 +4,7 @@ import {
   API_BASE_URL,
   ENDPOINT,
   getStreamingVideoThumbnail,
-} from "@/lib/api.server";
+} from "@/lib/api.client";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
@@ -63,7 +63,10 @@ export default function VSPlusPage() {
     }
 
     // Premium user - navigate to watch page
-    router.push(`/vs+/watch?id=${video.id}`);
+    const params = new URLSearchParams({ id: video.id });
+    if (video.source) params.set("source", video.source);
+    if (video.key) params.set("key", video.key);
+    router.push(`/vs+/watch?${params.toString()}`);
   };
 
   return (
@@ -165,7 +168,11 @@ export default function VSPlusPage() {
                 <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-900">
                   {/* Thumbnail Image */}
                   <Image
-                    src={getStreamingVideoThumbnail(video.id)}
+                    src={
+                      video.source === "s3"
+                        ? "/premium.png"
+                        : getStreamingVideoThumbnail(video.id)
+                    }
                     alt={video.name || "Premium video"}
                     fill
                     className={cn(

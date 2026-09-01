@@ -46,6 +46,16 @@ const getStreamingUrl = async (key, expiresIn = 3600) => {
   return signedUrl;
 };
 
+const getVideoObjectStream = async (key, range) => {
+  const command = new GetObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: key,
+    ...(range ? { Range: range } : {}),
+  });
+
+  return await s3Client.send(command);
+};
+
 const deleteVideoFromS3 = async (key) => {
   const command = new DeleteObjectCommand({
     Bucket: BUCKET_NAME,
@@ -93,6 +103,7 @@ module.exports = {
   s3Client,
   uploadVideoToS3,
   getStreamingUrl,
+  getVideoObjectStream,
   deleteVideoFromS3,
   listVideosInS3,
   getVideoMetadata,

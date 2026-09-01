@@ -3,67 +3,68 @@
  * Single source of truth for all API endpoints
  */
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3332";
 
 export const ENDPOINT = {
   // Authentication
-  login: "/auth/login",
-  signup: "/auth/signup",
-  logout: "/auth/logout",
-  refresh: "/auth/refresh",
-  forgetPassword: "/auth/forgetPassword",
-  resetPassword: "/auth/resetPassword",
+  login: "/api/auth/login",
+  signup: "/api/auth/signup",
+  logout: "/api/auth/logout",
+  refresh: "/api/auth/refresh",
+  forgetPassword: "/api/auth/forgetPassword",
+  resetPassword: "/api/auth/resetPassword",
 
   // Discover
-  discoverNowPlaying: "/discover/now-playing",
-  discoverTrending: "/discover/trending",
-  discoverTopRated: "/discover/top-rated",
-  discoverUpcoming: "/discover/upcoming",
+  discoverNowPlaying: "/api/discover/now-playing",
+  discoverTrending: "/api/discover/trending",
+  discoverTopRated: "/api/discover/top-rated",
+  discoverUpcoming: "/api/discover/upcoming",
 
   // Movies
-  fetchActionMovies: "/movies/action",
-  fetchComedyMovies: "/movies/comedy",
-  fetchHorrorMovies: "/movies/horror",
-  fetchRomanceMovies: "/movies/romance",
-  fetchAnimeMovies: "/movies/anime",
-  getMovieDetails: (id) => `/movies/details?id=${id}`,
+  fetchActionMovies: "/api/movies/action",
+  fetchComedyMovies: "/api/movies/comedy",
+  fetchHorrorMovies: "/api/movies/horror",
+  fetchRomanceMovies: "/api/movies/romance",
+  fetchAnimeMovies: "/api/movies/anime",
+  getMovieDetails: (id) => `/api/movies/details?id=${id}`,
 
   // TV Shows
-  fetchActionTvShows: "/tv/action",
-  fetchComedyTvShows: "/tv/comedy",
-  fetchCrimeTvShows: "/tv/crime",
-  fetchDramaTvShows: "/tv/drama",
-  fetchMysteryTvShows: "/tv/mystery",
-  getTvShowsDetails: (id) => `/tv/details?id=${id}`,
+  fetchActionTvShows: "/api/tv/action",
+  fetchComedyTvShows: "/api/tv/comedy",
+  fetchCrimeTvShows: "/api/tv/crime",
+  fetchDramaTvShows: "/api/tv/drama",
+  fetchMysteryTvShows: "/api/tv/mystery",
+  getTvShowsDetails: (id) => `/api/tv/details?id=${id}`,
 
   // User
-  user: "/user",
-  addToWishlist: "/user/wishlist",
-  getWishlist: "/user/wishlist",
-  removeFromWishlist: (id) => `/user/wishlist/${id}`,
+  user: "/api/user",
+  addToWishlist: "/api/user/wishlist",
+  getWishlist: "/api/user/wishlist",
+  removeFromWishlist: (id) => `/api/user/wishlist/${id}`,
 
   // Payment & Subscription
-  payment: "/payment/order",
-  verifyPayment: "/payment/verify",
-  subscriptionStatus: "/payment/status",
-  mySubscription: "/payment/me",
-  verifyOrder: (orderId) => `/payment/verify-order/${orderId}`,
-  plans: "/payment/plans",
+  payment: "/api/payment/order",
+  verifyPayment: "/api/payment/verify",
+  subscriptionStatus: "/api/payment/status",
+  mySubscription: "/api/payment/me",
+  verifyOrder: (orderId) => `/api/payment/verify-order/${orderId}`,
+  plans: "/api/payment/plans",
 
   // Video Streaming
-  fetchAllStreamingVideos: "/video",
-  fetchStreamingVideo: (id) => `/video?id=${id}`,
-  fetchVideoThumbnail: (id) => `/video/thumbnail?videoId=${id}`,
-  videoWatch: (id) => `/video/watch?id=${id}`,
+  fetchAllStreamingVideos: "/api/video",
+  fetchStreamingVideo: (id) => `/api/video?id=${id}`,
+  fetchVideoThumbnail: (id) => `/api/video/thumbnail?videoId=${id}`,
+  videoWatch: (id) => `/api/video/watch?id=${id}`,
 
   // Admin
-  adminDashboard: "/admin/dashboard",
-  adminUsers: "/admin/users",
-  adminUserById: (id) => `/admin/users/${id}`,
-  adminVideos: "/admin/videos",
-  adminVideoUpload: "/admin/videos/upload",
-  adminVideoUploadLocal: "/admin/videos/upload/local",
-  adminVideoDelete: (id) => `/admin/videos/${id}`,
+  adminDashboard: "/api/admin/dashboard",
+  adminUsers: "/api/admin/users",
+  adminUserById: (id) => `/api/admin/users/${id}`,
+  adminVideos: "/api/admin/videos",
+  adminVideoUpload: "/api/admin/videos/upload",
+  adminVideoUploadLocal: "/api/admin/videos/upload/local",
+  adminVideoDelete: (id) => `/api/admin/videos/${id}`,
 };
 
 // TMDB Image Base URL

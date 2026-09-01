@@ -13,7 +13,7 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 const cookieOptions = {
   httpOnly: true,
   secure: NODE_ENV === "production",
-  sameSite: NODE_ENV === "production" ? "strict" : "lax",
+  sameSite: NODE_ENV === "production" ? "none" : "lax",
 };
 
 const generateAccessToken = (userId, email) => {

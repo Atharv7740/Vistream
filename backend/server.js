@@ -23,15 +23,36 @@ app.use("/api/payment/webhook", express.raw({ type: "application/json" }));
 app.use(express.json());
 app.use(cookieParser());
 
+const configuredFrontendUrls = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((url) => url.trim())
+  .filter(Boolean);
+
+const allowedOrigins = [
+  ...configuredFrontendUrls,
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS: " + origin));
+      }
+    },
     credentials: true,
   }),
 );
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to the ViStream backend server" });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 app.use("/api/discover", discoverRoutes);

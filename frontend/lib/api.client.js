@@ -32,7 +32,7 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         await axios.post(
-          `${API_BASE_URL}/auth/refresh`,
+          `${API_BASE_URL}${ENDPOINT.refresh}`,
           {},
           { withCredentials: true },
         );

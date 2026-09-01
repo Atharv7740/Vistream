@@ -18,14 +18,14 @@ const nextConfig = {
     qualities: [30, 75],
   },
 
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://backend:3332/api/:path*',
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/api/:path*',
+  //       destination: 'http://backend:3332/api/:path*',
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;

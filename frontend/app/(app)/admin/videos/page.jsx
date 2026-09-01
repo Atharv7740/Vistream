@@ -45,7 +45,7 @@ export default function AdminVideos() {
     formData.append("video", selectedFile);
 
     try {
-      await api.post(ENDPOINT.adminVideoUploadLocal, formData, {
+      await api.post(ENDPOINT.adminVideoUpload, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       alert("Video uploaded successfully!");

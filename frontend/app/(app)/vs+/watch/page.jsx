@@ -13,6 +13,8 @@ import LoginModal from "@/components/atom/LoginModal";
 function WatchPremium({ searchParams }) {
   const params = React.use(searchParams);
   const videoId = params?.id;
+  const source = params?.source;
+  const key = params?.key;
   const userData = useSelector((state) => state.user);
   const isLoggedIn = userData?.isLoggedIn;
   const isPremium = userData?.user?.isPremium;
@@ -101,7 +103,10 @@ function WatchPremium({ searchParams }) {
   }
 
   // Premium user - show video player
-  const videoUrl = `${API_BASE_URL}/video/watch?id=${videoId}`;
+  const watchParams = new URLSearchParams({ id: videoId });
+  if (source) watchParams.set("source", source);
+  if (key) watchParams.set("key", key);
+  const videoUrl = `${API_BASE_URL}/api/video/watch?${watchParams.toString()}`;
 
   return (
     <div className="min-h-screen bg-black">

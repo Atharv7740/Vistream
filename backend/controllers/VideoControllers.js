@@ -5,7 +5,11 @@ const ffmpegStatic = require("ffmpeg-static");
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
-const { getStreamingUrl, listVideosInS3 } = require("../services/s3Service");
+const {
+  getVideoMetadata,
+  getVideoObjectStream,
+  listVideosInS3,
+} = require("../services/s3Service");
 
 /**
  * @desc Fetch all available videos (local + S3)
@@ -63,11 +67,47 @@ const getVideoStream = async (req, res) => {
     if (!id && !key) return res.status(400).json({ error: "Video ID is required" });
 
     if (source === "s3" && key) {
-      const signedUrl = await getStreamingUrl(key);
-      return res.redirect(signedUrl);
+      const metadata = await getVideoMetadata(key);
+      const fileSize = metadata.contentLength;
+      const range = req.headers.range;
+
+      if (!range) {
+        const s3Object = await getVideoObjectStream(key);
+        res.writeHead(200, {
+          "Content-Length": fileSize,
+          "Content-Type": metadata.contentType || "video/mp4",
+          "Cache-Control": "private, max-age=3600",
+          "Accept-Ranges": "bytes",
+        });
+        s3Object.Body.pipe(res);
+        return;
+      }
+
+      const CHUNK_SIZE = 1 * 1024 * 1024;
+      const [startStr, endStr] = range.replace(/bytes=/, "").split("-");
+      const start = parseInt(startStr, 10);
+      const end = endStr ? parseInt(endStr, 10) : Math.min(start + CHUNK_SIZE, fileSize - 1);
+
+      if (isNaN(start) || start >= fileSize)
+        return res.status(416).send("Requested range not satisfiable");
+
+      const s3Range = `bytes=${start}-${end}`;
+      const s3Object = await getVideoObjectStream(key, s3Range);
+      const contentLength = end - start + 1;
+
+      res.writeHead(206, {
+        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+        "Accept-Ranges": "bytes",
+        "Content-Length": contentLength,
+        "Content-Type": metadata.contentType || "video/mp4",
+        "Cache-Control": "private, max-age=3600",
+        Connection: "keep-alive",
+      });
+      s3Object.Body.pipe(res);
+      return;
     }
 
-    const videoPath = path.resolve("videos", `${id}.mp4`);
+    const videoPath = path.join(__dirname, "..", "videos", `${id}.mp4`);
     if (!fs.existsSync(videoPath)) return res.status(404).json({ error: "Video not found" });
 
     const stat = fs.statSync(videoPath);

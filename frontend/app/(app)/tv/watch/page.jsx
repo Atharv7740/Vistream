@@ -1,6 +1,7 @@
 import ShareButton from "@/components/atom/ShareButton";
 import WishlistButton from "@/components/atom/WishlistButton";
 import { buttonVariants } from "@/components/ui/button";
+import { API_BASE_URL, ENDPOINT } from "@/lib/api.server";
 import { FilmIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -12,7 +13,7 @@ const page = async ({ searchParams }) => {
 
   try {
     // fetch details
-    const response = await fetch(`http://localhost:3332/api/tv/details?id=${id}`, {
+    const response = await fetch(`${API_BASE_URL}${ENDPOINT.getTvShowsDetails(id)}`, {
       cache: "no-store",
     });
 

@@ -4,6 +4,7 @@ import WishlistButton from "@/components/atom/WishlistButton";
 import { buttonVariants } from "@/components/ui/button";
 // import { api, ENDPOINT } from "@/lib/api";
 // import { safeFetch } from "@/lib/api.server";
+import { API_BASE_URL, ENDPOINT } from "@/lib/api.server";
 import { FilmIcon } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -13,7 +14,9 @@ const page = async ({ searchParams }) => {
   const id = params.id;
   const poster_path = params.poster_path;
   
-    const response= await fetch(`http://localhost:3332/api/movies/details?id=${id}`);
+    const response= await fetch(`${API_BASE_URL}${ENDPOINT.getMovieDetails(id)}`, {
+        cache: "no-store",
+    });
     const details = await response.json()
     const results = details.data.results;
     const key = results[0].key

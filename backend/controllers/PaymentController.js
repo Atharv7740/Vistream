@@ -385,14 +385,20 @@ const verifyPayment = async (req, res) => {
 const handleWebhook = async (req, res) => {
   try {
     const signature = req.headers["x-razorpay-signature"];
-    const body = JSON.stringify(req.body);
+    const body = Buffer.isBuffer(req.body)
+      ? req.body.toString("utf8")
+      : JSON.stringify(req.body);
 
     if (!verifyWebhookSignature(body, signature)) {
       return res.status(400).json({ message: "Invalid webhook signature" });
     }
 
-    const event = req.body.event;
-    const payload = req.body.payload;
+    const webhookPayload = Buffer.isBuffer(req.body)
+      ? JSON.parse(body)
+      : req.body;
+
+    const event = webhookPayload.event;
+    const payload = webhookPayload.payload;
 
     // Create unique webhook identifier for deduplication
     const paymentEntity = payload.payment?.entity;

@@ -5,11 +5,11 @@
   <img src="https://img.shields.io/badge/Express.js-5.x-black?style=for-the-badge&logo=express" alt="Express">
   <img src="https://img.shields.io/badge/MongoDB-Atlas-green?style=for-the-badge&logo=mongodb" alt="MongoDB">
   <img src="https://img.shields.io/badge/AWS-S3-orange?style=for-the-badge&logo=amazon-aws" alt="AWS S3">
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker" alt="Docker">
-  <img src="https://img.shields.io/badge/GitHub-Actions-blue?style=for-the-badge&logo=github-actions" alt="GitHub Actions">
+  <img src="https://img.shields.io/badge/Vercel-Frontend-black?style=for-the-badge&logo=vercel" alt="Vercel">
+  <img src="https://img.shields.io/badge/Render-Backend-46E3B7?style=for-the-badge" alt="Render">
 </p>
 
-A full-stack streaming platform built with modern technologies. Features include user authentication, premium subscription via Razorpay, video streaming, admin panel for content management, Docker containerization, and CI/CD deployment to AWS EC2.
+A full-stack streaming platform built with modern technologies. Features include user authentication, premium subscription via Razorpay, video streaming from S3, and an admin panel for content management.
 
 ---
 
@@ -28,8 +28,7 @@ A full-stack streaming platform built with modern technologies. Features include
 - 📊 **Dashboard** - View platform statistics
 
 ### Technical Features
-- 🐳 **Docker** - Containerized frontend and backend
-- ⚡ **CI/CD** - GitHub Actions auto-deploy to AWS EC2
+- 🚀 **Deployment** - Next.js frontend on Vercel and Express API on Render
 - ☁️ **AWS S3** - Scalable video storage with pre-signed URLs
 - 🔒 **Security** - Premium validation, JWT auth, admin middleware
 
@@ -44,7 +43,7 @@ A full-stack streaming platform built with modern technologies. Features include
 | **Database** | MongoDB Atlas |
 | **Storage** | AWS S3 |
 | **Payments** | Razorpay |
-| **DevOps** | Docker, Docker Compose, GitHub Actions, AWS EC2 |
+| **Deployment** | Vercel, Render, GitHub |
 | **Other** | JWT, bcrypt, ffmpeg, SendGrid |
 
 ---
@@ -53,17 +52,11 @@ A full-stack streaming platform built with modern technologies. Features include
 
 ```
 Vistream/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml          # CI/CD Pipeline
-├── docker-compose.yml          # Multi-container setup
-├── Dockerfile.backend          # Backend container
-├── Dockerfile.frontend         # Frontend container
-├── nginx.conf                  # Reverse proxy
-├── .env.example                # Environment template
+├── render.yaml                 # Render backend blueprint
 │
 ├── backend/                    # Express.js API
 │   ├── server.js               # Main server entry
+│   ├── .env.example            # Backend environment template
 │   ├── Routes/                 # API routes
 │   ├── controllers/           # Business logic
 │   ├── models/                 # MongoDB models
@@ -73,6 +66,7 @@ Vistream/
 │   └── utils/                  # Utilities
 │
 └── frontend/                   # Next.js App
+    ├── .env.example            # Frontend environment template
     ├── app/                    # Pages and routing
     ├── components/             # Reusable components
     ├── redux/                  # State management
@@ -86,7 +80,6 @@ Vistream/
 
 - Node.js 20+
 - npm or yarn
-- Docker & Docker Compose
 - MongoDB Atlas account
 - AWS account (S3 + IAM user)
 - Razorpay account
@@ -147,7 +140,7 @@ cd ../frontend
 npm install
 
 # Create environment file
-echo "NEXT_PUBLIC_API_BASE_URL=http://localhost:3332/api" > .env
+cp .env.example .env
 
 # Run development server
 npm run dev
@@ -162,40 +155,26 @@ npm run dev
 
 ## Deployment
 
-### Docker Deployment
+### Backend: Render
+
+- Root directory: `backend`
+- Build command: `npm ci`
+- Start command: `npm start`
+- Health check path: `/health`
+
+Set the backend environment variables from `backend/.env.example`.
+
+### Frontend: Vercel
+
+- Root directory: `frontend`
+- Framework: Next.js
+- Build command: `npm run build`
+
+Set `NEXT_PUBLIC_API_BASE_URL` to the Render backend origin, for example:
 
 ```bash
-# Build and run containers
-docker-compose up -d --build
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
+NEXT_PUBLIC_API_BASE_URL=https://vistream-api.onrender.com
 ```
-
-### AWS EC2 Deployment
-
-1. Launch a t3.micro instance (Ubuntu 22.04)
-2. Install Docker:
-   ```bash
-   curl -fsSL https://get.docker.com | sh
-   sudo usermod -aG docker ubuntu
-   ```
-3. Clone repository and setup environment
-4. Deploy:
-   ```bash
-   docker-compose up -d
-   ```
-
-### CI/CD with GitHub Actions
-
-Push to main branch triggers automatic deployment to EC2.
-
-**Required GitHub Secrets:**
-- `EC2_HOST` - EC2 public IP
-- `SSH_PRIVATE_KEY` - SSH private key
 
 ---
 
@@ -240,7 +219,7 @@ Push to main branch triggers automatic deployment to EC2.
 - **JWT Authentication** - Secure token-based auth
 - **Premium Validation** - Database check for active subscription
 - **Admin Middleware** - Role-based access control
-- **S3 Pre-signed URLs** - Secure video streaming (URLs expire in 1 hour)
+- **Authenticated S3 Streaming** - Premium video playback through the backend API
 - **Razorpay Webhooks** - Payment verification
 
 ---
@@ -269,4 +248,4 @@ MIT License
 
 - TMDB for movie data
 - Razorpay for payment integration
-- AWS for cloud infrastructure
+- AWS S3 for video storage

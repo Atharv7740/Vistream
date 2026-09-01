@@ -43,3 +43,4 @@ docker-compose.override.yml
 # Local folders to ignore
 POC/
 notes/
+docs
