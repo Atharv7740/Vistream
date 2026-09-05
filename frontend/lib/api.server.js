@@ -1,14 +1,19 @@
 import axios from "axios";
 import {
-  API_BASE_URL,
   ENDPOINT,
   media,
   getStreamingVideoThumbnail,
   getWatchUrl,
 } from "./api.config";
 
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+export const API_BASE_URL =
+  process.env.RENDER_API_BASE_URL ||
+  (configuredApiBaseUrl?.startsWith("http") ? configuredApiBaseUrl : null) ||
+  "http://localhost:3332";
+
 export {
-  API_BASE_URL,
   ENDPOINT,
   media,
   getStreamingVideoThumbnail,
