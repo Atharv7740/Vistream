@@ -1,12 +1,12 @@
 const fs = require("fs");
 const path = require("path");
-const crypto = require("crypto");
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegStatic = require("ffmpeg-static");
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
 const {
+  getVideoMetadata,
   getStreamingUrl,
   listVideosInS3,
 } = require("../services/s3Service");
@@ -129,11 +129,20 @@ const getThumbnail = async (req, res) => {
     if (!videoId && !key) return res.status(400).json({ error: "Video ID is required" });
 
     const thumbnailDir = path.join(__dirname, "..", "thumbnails");
-    const thumbnailName =
-      source === "s3" && key
-        ? `s3-${crypto.createHash("sha1").update(key).digest("hex")}.jpg`
-        : `${videoId}.jpg`;
+    const resolvedVideoId = videoId || path.parse(path.basename(key)).name;
+    const thumbnailName = `${resolvedVideoId}.jpg`;
     const thumbnailPath = path.join(thumbnailDir, thumbnailName);
+
+    if (source === "s3" && key) {
+      const thumbnailKey = `thumbnails/${resolvedVideoId}.jpg`;
+      try {
+        await getVideoMetadata(thumbnailKey);
+        const signedThumbnailUrl = await getStreamingUrl(thumbnailKey, 60 * 60);
+        return res.redirect(302, signedThumbnailUrl);
+      } catch (err) {
+        console.warn(`S3 thumbnail missing for ${key}, generating fallback`);
+      }
+    }
 
     // Create thumbnails folder if missing
     if (!fs.existsSync(thumbnailDir)) fs.mkdirSync(thumbnailDir, { recursive: true });
