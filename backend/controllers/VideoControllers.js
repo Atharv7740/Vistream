@@ -119,6 +119,32 @@ const getVideoStream = async (req, res) => {
   }
 };
 
+const getSignedVideoUrl = async (req, res) => {
+  try {
+    const { id, key, source } = req.query;
+    if (source !== "s3" || !key) {
+      return res.status(400).json({
+        message: "Signed URLs are only available for S3 videos",
+        status: "failure",
+      });
+    }
+
+    const url = await getStreamingUrl(key, 60 * 10);
+    return res.status(200).json({
+      status: "success",
+      id,
+      url,
+      expiresIn: 60 * 10,
+    });
+  } catch (err) {
+    console.error("Error creating signed video URL:", err);
+    return res.status(500).json({
+      message: "Failed to prepare video playback",
+      status: "failure",
+    });
+  }
+};
+
 /**
  * @desc Serve or auto-generate a video thumbnail using fluent-ffmpeg
  * @route GET /api/video/thumbnail?videoId={id}
@@ -180,5 +206,6 @@ const getThumbnail = async (req, res) => {
 module.exports = {
   getAllVideos,
   getVideoStream,
+  getSignedVideoUrl,
   getThumbnail,
 };

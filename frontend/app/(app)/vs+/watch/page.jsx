@@ -1,10 +1,10 @@
 "use client";
 import { buttonVariants } from "@/components/ui/button";
-import { API_BASE_URL } from "@/lib/api.client";
+import { api, API_BASE_URL, ENDPOINT } from "@/lib/api.client";
 import { cn } from "@/lib/utils";
-import { FolderLockIcon, ArrowLeft } from "lucide-react";
+import { FolderLockIcon, ArrowLeft, Loader2Icon } from "lucide-react";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import VideoPlayer from "@/components/atom/VideoPlayer";
 import SubscribeModal from "@/components/atom/SubscribeModal";
@@ -22,6 +22,49 @@ function WatchPremium({ searchParams }) {
     !isLoggedIn || !isPremium,
   );
   const [showLoginModal, setShowLoginModal] = useState(!isLoggedIn);
+  const [playbackUrl, setPlaybackUrl] = useState("");
+  const [playbackError, setPlaybackError] = useState("");
+
+  const watchPath = useMemo(() => {
+    const watchParams = new URLSearchParams();
+    if (videoId) watchParams.set("id", videoId);
+    if (source) watchParams.set("source", source);
+    if (key) watchParams.set("key", key);
+
+    return `/vs+/watch?${watchParams.toString()}`;
+  }, [videoId, source, key]);
+
+  useEffect(() => {
+    if (!isLoggedIn || !isPremium || !videoId) return;
+
+    const loadPlaybackUrl = async () => {
+      try {
+        setPlaybackError("");
+        setPlaybackUrl("");
+
+        const watchParams = new URLSearchParams({ id: videoId });
+        if (source) watchParams.set("source", source);
+        if (key) watchParams.set("key", key);
+
+        if (source === "s3" && key) {
+          const response = await api.get(
+            `${ENDPOINT.videoSignedUrl}?${watchParams.toString()}`,
+          );
+          setPlaybackUrl(response.data.url);
+          return;
+        }
+
+        setPlaybackUrl(`${API_BASE_URL}/api/video/watch?${watchParams.toString()}`);
+      } catch (err) {
+        console.error("Failed to prepare video playback:", err);
+        setPlaybackError(
+          err.response?.data?.message || "Failed to prepare video playback.",
+        );
+      }
+    };
+
+    loadPlaybackUrl();
+  }, [isLoggedIn, isPremium, videoId, source, key]);
 
   // Not logged in - show login modal
   if (!isLoggedIn) {
@@ -33,7 +76,7 @@ function WatchPremium({ searchParams }) {
             setShowLoginModal(false);
             window.history.back();
           }}
-          redirectTo={`/vs+/watch?id=${videoId}`}
+          redirectTo={watchPath}
         />
         <div className="flex flex-col items-center justify-center h-full w-full gap-6 text-white px-4">
           <FolderLockIcon
@@ -47,7 +90,7 @@ function WatchPremium({ searchParams }) {
             Please sign in to access premium video content.
           </p>
           <Link
-            href={"/login?redirect=/vs+/watch?id=" + videoId}
+            href={`/login?redirect=${encodeURIComponent(watchPath)}`}
             className={cn(buttonVariants(), "rounded-full px-6 md:px-8")}
           >
             Sign In
@@ -102,11 +145,27 @@ function WatchPremium({ searchParams }) {
     );
   }
 
-  // Premium user - show video player
-  const watchParams = new URLSearchParams({ id: videoId });
-  if (source) watchParams.set("source", source);
-  if (key) watchParams.set("key", key);
-  const videoUrl = `${API_BASE_URL}/api/video/watch?${watchParams.toString()}`;
+  if (playbackError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black px-4 text-center text-white">
+        <FolderLockIcon className="h-16 w-16 text-red-500" strokeWidth={1.5} />
+        <h1 className="text-xl font-bold">Playback Unavailable</h1>
+        <p className="max-w-md text-sm text-gray-400">{playbackError}</p>
+        <Link href="/vs+" className={cn(buttonVariants(), "rounded-full px-6")}>
+          Back to VS+
+        </Link>
+      </div>
+    );
+  }
+
+  if (!playbackUrl) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black text-white">
+        <Loader2Icon className="h-12 w-12 animate-spin" />
+        <p className="text-sm text-gray-400">Preparing video...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -126,7 +185,7 @@ function WatchPremium({ searchParams }) {
 
           {/* Video Player - Theater Mode */}
           <VideoPlayer
-            src={videoUrl}
+            src={playbackUrl}
             className="w-full aspect-video rounded-xl overflow-hidden shadow-2xl"
             onError={(e) => {
               console.error("Video playback error:", e);
@@ -166,7 +225,7 @@ function WatchPremium({ searchParams }) {
         {/* Video Player - Full Width */}
         <div className="w-full">
           <VideoPlayer
-            src={videoUrl}
+            src={playbackUrl}
             className="w-full aspect-video"
             onError={(e) => {
               console.error("Video playback error:", e);

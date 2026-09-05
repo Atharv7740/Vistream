@@ -7,6 +7,7 @@ const {
 } = require("../middleware/premiumMiddleware");
 const {
   getVideoStream,
+  getSignedVideoUrl,
   getAllVideos,
   getThumbnail,
 } = require("../controllers/VideoControllers");
@@ -18,6 +19,7 @@ router.get("/", getAllVideos); // Allow ALL users (guest, free, premium) to brow
 // Protected routes (streaming requires premium)
 router.use(authMiddleware);
 router.use(requirePremium);
+router.get("/signed-url", getSignedVideoUrl);
 router.get("/watch", getVideoStream);
 
 module.exports = router;

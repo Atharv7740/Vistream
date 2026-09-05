@@ -60,6 +60,7 @@ export const ENDPOINT = {
   fetchStreamingVideo: (id) => `/api/video?id=${id}`,
   fetchVideoThumbnail: (id) => `/api/video/thumbnail?videoId=${id}`,
   videoWatch: (id) => `/api/video/watch?id=${id}`,
+  videoSignedUrl: "/api/video/signed-url",
 
   // Admin
   adminDashboard: "/api/admin/dashboard",
