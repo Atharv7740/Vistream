@@ -3,8 +3,11 @@
  * Single source of truth for all API endpoints
  */
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3332";
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+export const API_BASE_URL = configuredApiBaseUrl?.includes(".onrender.com")
+  ? "/api-proxy"
+  : configuredApiBaseUrl || "http://localhost:3332";
 
 export const ENDPOINT = {
   // Authentication

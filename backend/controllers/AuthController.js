@@ -40,13 +40,13 @@ const setAuthCookies = (res, accessToken, refreshToken) => {
   res.cookie("Refresh_token", refreshToken, {
     ...cookieOptions,
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: "/api/auth",
+    path: "/",
   });
 };
 
 const clearAuthCookies = (res) => {
   res.clearCookie("Auth_token", cookieOptions);
-  res.clearCookie("Refresh_token", { ...cookieOptions, path: "/api/auth" });
+  res.clearCookie("Refresh_token", { ...cookieOptions, path: "/" });
 };
 
 async function authMiddleware(req, res, next) {
