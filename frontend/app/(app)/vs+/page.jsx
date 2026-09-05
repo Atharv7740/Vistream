@@ -169,9 +169,11 @@ export default function VSPlusPage() {
                   {/* Thumbnail Image */}
                   <Image
                     src={
-                      video.source === "s3"
-                        ? "/premium.png"
-                        : getStreamingVideoThumbnail(video.id)
+                      getStreamingVideoThumbnail(
+                        video.id,
+                        video.source,
+                        video.key,
+                      )
                     }
                     alt={video.name || "Premium video"}
                     fill

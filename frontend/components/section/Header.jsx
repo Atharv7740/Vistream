@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { Crown, LayoutDashboard } from "lucide-react";
+import { useState } from "react";
 import ProfileSheet from "../atom/ProfileSheet";
 
 export const navLinks = [
@@ -17,10 +18,20 @@ export const navLinks = [
 
 export default function Header() {
   const path = usePathname();
+  const router = useRouter();
   const activeTabKey = path.split("/")[1];
   const userData = useSelector((state) => state.user);
   const isPremium = userData?.user?.isPremium;
   const isAdmin = userData?.user?.role === "admin";
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) return;
+
+    router.push(`/search?query=${encodeURIComponent(trimmedQuery)}`);
+  };
 
   return (
     <div className="flex items-center justify-between h-full px-4 lg:px-8">
@@ -78,14 +89,20 @@ export default function Header() {
 
       {/* Right: Search + Profile */}
       <div className="flex items-center gap-4">
-        <div className="hidden lg:flex items-center gap-2 border border-gray-700 rounded-3xl px-3 py-1 bg-gray-900/50">
+        <form
+          onSubmit={handleSearch}
+          className="hidden lg:flex items-center gap-2 border border-gray-700 rounded-3xl px-3 py-1 bg-gray-900/50"
+          role="search"
+        >
           <Image src="/search.svg" alt="search" height={20} width={20} />
           <input
             type="text"
             placeholder="Search..."
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
             className="bg-transparent text-white text-sm w-32 focus:outline-none"
           />
-        </div>
+        </form>
         <ProfileSheet />
       </div>
     </div>

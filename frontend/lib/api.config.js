@@ -23,6 +23,7 @@ export const ENDPOINT = {
   discoverTrending: "/api/discover/trending",
   discoverTopRated: "/api/discover/top-rated",
   discoverUpcoming: "/api/discover/upcoming",
+  search: (query) => `/api/discover/search?query=${encodeURIComponent(query)}`,
 
   // Movies
   fetchActionMovies: "/api/movies/action",
@@ -74,11 +75,19 @@ export const ENDPOINT = {
 export const media = (path) => `https://image.tmdb.org/t/p/original${path}`;
 
 // Helper function for video thumbnail URLs
-export const getStreamingVideoThumbnail = (id) =>
-  API_BASE_URL + ENDPOINT.fetchVideoThumbnail(id);
+export const getStreamingVideoThumbnail = (id, source, key) => {
+  const params = new URLSearchParams({ videoId: id || "" });
+  if (source) params.set("source", source);
+  if (key) params.set("key", key);
+
+  return `${API_BASE_URL}/api/video/thumbnail?${params.toString()}`;
+};
 
 // Helper function for watch URLs
 export function getWatchUrl(vidId, mediaType, poster_path) {
   const prefix = mediaType === "tv" ? "tv" : "movies";
-  return `${prefix}/watch?id=${vidId}&poster_path=${poster_path}`;
+  const params = new URLSearchParams({ id: String(vidId) });
+  if (poster_path) params.set("poster_path", poster_path);
+
+  return `/${prefix}/watch?${params.toString()}`;
 }

@@ -40,7 +40,7 @@ export default function VideoPlayer({
       onLoadStart?.();
     };
 
-    const handleCanPlay = () => {
+    const handleMediaReady = () => {
       setIsLoading(false);
       setError(null);
       onCanPlay?.();
@@ -69,7 +69,10 @@ export default function VideoPlayer({
     };
 
     video.addEventListener("loadstart", handleLoadStart);
-    video.addEventListener("canplay", handleCanPlay);
+    video.addEventListener("loadedmetadata", handleMediaReady);
+    video.addEventListener("loadeddata", handleMediaReady);
+    video.addEventListener("canplay", handleMediaReady);
+    video.addEventListener("playing", handleMediaReady);
     video.addEventListener("error", handleError);
     video.addEventListener("timeupdate", handleTimeUpdate);
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
@@ -77,7 +80,10 @@ export default function VideoPlayer({
 
     return () => {
       video.removeEventListener("loadstart", handleLoadStart);
-      video.removeEventListener("canplay", handleCanPlay);
+      video.removeEventListener("loadedmetadata", handleMediaReady);
+      video.removeEventListener("loadeddata", handleMediaReady);
+      video.removeEventListener("canplay", handleMediaReady);
+      video.removeEventListener("playing", handleMediaReady);
       video.removeEventListener("error", handleError);
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("loadedmetadata", handleLoadedMetadata);
@@ -174,7 +180,6 @@ export default function VideoPlayer({
         poster={poster}
         className="w-full h-full object-contain"
         onClick={togglePlay}
-        crossOrigin="use-credentials"
         playsInline
       />
 

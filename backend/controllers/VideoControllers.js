@@ -1,13 +1,13 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegStatic = require("ffmpeg-static");
 
 ffmpeg.setFfmpegPath(ffmpegStatic);
 
 const {
-  getVideoMetadata,
-  getVideoObjectStream,
+  getStreamingUrl,
   listVideosInS3,
 } = require("../services/s3Service");
 
@@ -67,44 +67,8 @@ const getVideoStream = async (req, res) => {
     if (!id && !key) return res.status(400).json({ error: "Video ID is required" });
 
     if (source === "s3" && key) {
-      const metadata = await getVideoMetadata(key);
-      const fileSize = metadata.contentLength;
-      const range = req.headers.range;
-
-      if (!range) {
-        const s3Object = await getVideoObjectStream(key);
-        res.writeHead(200, {
-          "Content-Length": fileSize,
-          "Content-Type": metadata.contentType || "video/mp4",
-          "Cache-Control": "private, max-age=3600",
-          "Accept-Ranges": "bytes",
-        });
-        s3Object.Body.pipe(res);
-        return;
-      }
-
-      const CHUNK_SIZE = 1 * 1024 * 1024;
-      const [startStr, endStr] = range.replace(/bytes=/, "").split("-");
-      const start = parseInt(startStr, 10);
-      const end = endStr ? parseInt(endStr, 10) : Math.min(start + CHUNK_SIZE, fileSize - 1);
-
-      if (isNaN(start) || start >= fileSize)
-        return res.status(416).send("Requested range not satisfiable");
-
-      const s3Range = `bytes=${start}-${end}`;
-      const s3Object = await getVideoObjectStream(key, s3Range);
-      const contentLength = end - start + 1;
-
-      res.writeHead(206, {
-        "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-        "Accept-Ranges": "bytes",
-        "Content-Length": contentLength,
-        "Content-Type": metadata.contentType || "video/mp4",
-        "Cache-Control": "private, max-age=3600",
-        Connection: "keep-alive",
-      });
-      s3Object.Body.pipe(res);
-      return;
+      const signedUrl = await getStreamingUrl(key, 60 * 10);
+      return res.redirect(302, signedUrl);
     }
 
     const videoPath = path.join(__dirname, "..", "videos", `${id}.mp4`);
@@ -161,11 +125,15 @@ const getVideoStream = async (req, res) => {
  */
 const getThumbnail = async (req, res) => {
   try {
-    const { videoId } = req.query;
-    if (!videoId) return res.status(400).json({ error: "Video ID is required" });
+    const { videoId, key, source } = req.query;
+    if (!videoId && !key) return res.status(400).json({ error: "Video ID is required" });
 
     const thumbnailDir = path.join(__dirname, "..", "thumbnails");
-    const thumbnailPath = path.join(thumbnailDir, `${videoId}.jpg`);
+    const thumbnailName =
+      source === "s3" && key
+        ? `s3-${crypto.createHash("sha1").update(key).digest("hex")}.jpg`
+        : `${videoId}.jpg`;
+    const thumbnailPath = path.join(thumbnailDir, thumbnailName);
 
     // Create thumbnails folder if missing
     if (!fs.existsSync(thumbnailDir)) fs.mkdirSync(thumbnailDir, { recursive: true });
@@ -173,14 +141,18 @@ const getThumbnail = async (req, res) => {
     // If thumbnail already exists, send it
     if (fs.existsSync(thumbnailPath)) return res.sendFile(thumbnailPath);
 
-    // Generate thumbnail using fluent-ffmpeg
-    const videoPath = path.join(__dirname, "..", "videos", `${videoId}.mp4`);
-    if (!fs.existsSync(videoPath)) return res.status(404).json({ error: "Video not found" });
+    let videoInput;
+    if (source === "s3" && key) {
+      videoInput = await getStreamingUrl(key, 60 * 10);
+    } else {
+      videoInput = path.join(__dirname, "..", "videos", `${videoId}.mp4`);
+      if (!fs.existsSync(videoInput)) return res.status(404).json({ error: "Video not found" });
+    }
 
-    ffmpeg(videoPath)
+    ffmpeg(videoInput)
       .screenshots({
-        timestamps: ["2"], // capture at 2s mark
-        filename: `${videoId}.jpg`,
+        timestamps: ["2"],
+        filename: thumbnailName,
         folder: thumbnailDir,
         size: "320x?",
       })

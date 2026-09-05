@@ -5,8 +5,9 @@ import CategoriesSection from "@/components/section/CategoriesSection";
 import { buttonVariants } from "@/components/ui/button";
 import { FolderLockIcon, TrashIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSelector } from "react-redux";
-import { api, ENDPOINT } from "@/lib/api.client";
+import { api, ENDPOINT, getWatchUrl, media } from "@/lib/api.client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -94,25 +95,31 @@ function WatchList() {
         fetcher={fetcher}
         title="Watchlist"
         id="watchlistheading"
-        renderItem={(item) => (
-          <div className="relative">
-            <img
-              src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
-              alt={item.name}
-              className="min-w-[200px] h-[300px] rounded-lg object-cover"
-              quality={30}
-              width={200}
-              height={300}
-            />
-            <button
-              onClick={() => removeFromWishlist(item.id)}
-              className="absolute top-2 right-2 bg-red-600 rounded-full p-1 text-white hover:bg-red-700"
-              title="Remove from Watchlist"
-            >
-              <TrashIcon className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        renderItem={(item) => {
+          const watchHref = getWatchUrl(item.id, item.media_type, item.poster_path);
+
+          return (
+            <div className="relative">
+              <Link href={watchHref} aria-label={`Watch ${item.name}`}>
+                <Image
+                  src={media(item.poster_path)}
+                  alt={item.name || "Watchlist item"}
+                  className="min-w-[200px] h-[300px] rounded-lg object-cover transition-opacity hover:opacity-80"
+                  quality={30}
+                  width={200}
+                  height={300}
+                />
+              </Link>
+              <button
+                onClick={() => removeFromWishlist(item.id)}
+                className="absolute top-2 right-2 bg-red-600 rounded-full p-1 text-white hover:bg-red-700"
+                title="Remove from Watchlist"
+              >
+                <TrashIcon className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        }}
       />
     </div>
   );
