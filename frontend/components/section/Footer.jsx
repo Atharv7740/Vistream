@@ -1,117 +1,61 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ExternalLink, Github } from "lucide-react";
 
-const headings = [
-    {
-        title: "Vistream",
-        links: ["For You", "Sports", "Movies", "TV Shows"],
-    },
-    {
-        title: "Support",
-        links: [
-            "Help Center",
-            "Terms Of Use",
-            "Privacy Policy",
-            "Content Complaints",
-        ],
-    },
+const footerLinks = [
+    { label: "Home", href: "/" },
+    { label: "Movies", href: "/movies" },
+    { label: "TV Shows", href: "/tv" },
+    { label: "Watchlist", href: "/watchlist" },
+    { label: "Vi+", href: "/vs+" },
 ];
-
-const downloadAppLinks = [
-    {
-        icon: "/googlePlay.svg",
-        alt: "Google Play",
-    },
-    {
-        icon: "/appleStore.svg",
-        alt: "App Store",
-    },
-];
-
-const connectWithUsLinks = [
-    {
-        icon: "facebook.svg",
-        href: "#",
-    },
-    {
-        icon: "x.svg",
-        href: "#",
-    },
-    {
-        icon: "instagram.svg",
-        href: "#",
-    },
-    {
-        icon: "youtube.svg",
-        href: "#",
-    },
-];
-
 
 export default function Footer() {
     return (
-        <footer className="bg-[#0f0f0f] text-gray-300">
-            <div className="md:mx-auto">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-start px-8 py-4">
-                    <div className="flex flex-col md:flex-row md:items-center gap-8 md:gap-16 mt-8">
-                        {headings.map((heading, index) => (
-                            <div key={index} className="flex flex-col gap-4">
-                                <h3 className="text-lg font-bold uppercase text-[#c1a362]">{heading.title}</h3>
-                                <div className="flex flex-col">
-                                    {heading.links.map((link, linkIndex) => (
-                                        <Link href="#" key={linkIndex} className="hover:text-[#c1a362] transition-colors">
-                                            {link}
-                                        </Link>
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex flex-col gap-4 md:gap-8 mt-8">
-                        <h3 className="text-lg font-bold uppercase text-[#c1a362]">Connect With Us</h3>
-                        <div className="flex gap-4">
-                            {connectWithUsLinks.map((link, linkIndex) => (
-                                <Link
-                                    key={linkIndex}
-                                    href={link.href}
-                                    className="rounded-full bg-gray-800 p-2 hover:bg-[#c1a362] hover:text-black transition-colors"
-                                >
-                                    <Image
-                                        src={"/" + link.icon}
-                                        alt={link.href}
-                                        width={40}
-                                        height={40}
-                                        className="md:h-10 md:w-10 h-8 w-8"
-                                    />
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-0 md:gap-1  md:mt-0">
-                        <h3 className="text-lg font-bold uppercase mt-8 text-[#c1a362]">
-                            Download the App
-                        </h3>
-                        <div className="flex gap-4">
-                            {downloadAppLinks.map((link, linkIndex) => (
-                                <Link key={linkIndex} href="#" className="flex items-center">
-                                    <Image
-                                        src={link.icon}
-                                        width={96}
-                                        height={64}
-                                        alt={link.alt}
-                                        className="w-24 h-16 md:w-[120px] md:h-[120px]"
-                                    />
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
+        <footer className="border-t border-white/10 bg-[#080808] text-gray-300">
+            <div className="mx-auto grid max-w-7xl gap-10 px-6 py-10 md:grid-cols-[1.4fr_0.9fr_1fr] md:items-start">
+                <div className="max-w-xl">
+                    <h2 className="text-2xl font-bold tracking-wide text-white">VISTREAM</h2>
+                    <p className="mt-3 text-sm leading-6 text-gray-400">
+                        Streaming platform with authenticated media access,
+                        watchlists, subscription payments, and admin-managed premium content.
+                    </p>
                 </div>
 
-                <div className="md:text-center text-start mt-8 flex w-full justify-between items-center bg-[#1a1a1a] py-4 px-4">
-                    <p className="md:text-sm text-xs">
-                        Copyright © 2024 Vistream. All rights reserved.
+                <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#c1a362]">
+                        Explore
+                    </h3>
+                    <nav className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm font-medium" aria-label="Footer navigation">
+                        {footerLinks.map((link) => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className="text-gray-300 transition-colors hover:text-[#c1a362]"
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </nav>
+                </div>
+
+                <div>
+                    <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#c1a362]">
+                        Platform
+                    </h3>
+                    <p className="mt-4 text-sm leading-6 text-gray-400">
+                        Secure auth, subscription lifecycle, content administration,
+                        and protected video streaming.
                     </p>
-                    <h2 className="text-xl font-bold text-[#c1a362]">VISTREAM</h2>
+                    <Link
+                        href="https://github.com/Atharv7740/Vistream"
+                        className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#c1a362] transition-colors hover:text-white"
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        <Github className="h-4 w-4" />
+                        Source code
+                        <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
                 </div>
             </div>
         </footer>

@@ -12,7 +12,7 @@ export const navLinks = [
   { name: "Movies", key: "movies", href: "/movies" },
   { name: "Tv Shows", key: "tv", href: "/tv" },
   { name: "Watchlist", key: "watchlist", href: "/watchlist" },
-  { name: "Vi+", key: "vi+", href: "/subscription" },
+  { name: "Vi+", key: "vs+", href: "/vs+" },
 ];
 
 export default function Header() {

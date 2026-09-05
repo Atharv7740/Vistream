@@ -16,7 +16,6 @@ import { LucideLoader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState,useEffect} from "react"; 
 import { useDispatch, useSelector } from "react-redux";
-// import { FcGoogle } from "react-icons/fc";
 
 function Login() {
   const [loading, setLoading] = useState(false);
@@ -139,18 +138,10 @@ function Login() {
           variant="outline"
           className="bg-white text-black hover:bg-zinc-200 w-full"
           onClick={onSubmit}
-          disabled={loading} // 👈 Disabled while loading
+          disabled={loading}
         >
           Login{" "}
           {loading && <LucideLoader2 className="animate-spin ml-2 w-4 h-4" />}
-        </Button>
-
-        <Button
-          variant="outline"
-          className="bg-black text-white border-zinc-600 hover:bg-zinc-800 hover:text-white flex items-center justify-center gap-2 w-full"
-        >
-          {/* Assuming you will uncomment and use FcGoogle icon here */}
-          Login with Google
         </Button>
       </CardFooter>
     </Card>
